@@ -1,0 +1,4 @@
+# Exclude generated output directories from source distributions
+prune output
+prune dist
+prune build

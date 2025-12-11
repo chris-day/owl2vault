@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "owl2vault"
+version = "0.1.3"
+description = "Generate LinkML schemas and Obsidian notes from OWL ontologies"
+authors = [{name = "Owl2Vault"}]
+requires-python = ">=3.10"
+dependencies = [
+  "rdflib>=6.0.0",
+  "pyyaml>=6.0",
+]
+
+[project.scripts]
+owl2vault = "owl2vault.cli:main"
+
+[tool.pytest.ini_options]
+addopts = "-vv"
+filterwarnings = [
+  "ignore:Code.*namespace XSD:UserWarning"
+]
+
+[tool.setuptools.packages.find]
+include = ["owl2vault"]
+exclude = ["output*", "dist*", "build*"]
