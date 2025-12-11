@@ -101,7 +101,7 @@ def model_to_linkml(om: OModel) -> Dict:
             description=prop.description,
             range_iri=range_iri,
             range_label=range_label,
-            is_object=not prop.is_annotation,
+            is_object=prop.kind == "object",
         )
         slots.setdefault(slot_like.name, _slot_entry(slot_like, om))
 

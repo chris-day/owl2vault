@@ -33,7 +33,7 @@ Generate a LinkML schema and an Obsidian-ready Markdown vault from an OWL ontolo
 ## Outputs
 
 - LinkML: YAML schema with classes, slots, enums, and properties.
-- Obsidian vault: per-entity markdown notes under `Classes/`, `Enums/`, `Properties/`, plus `00-Index/Index.md` linking everything. Notes use stable IRI-derived IDs.
+- Obsidian vault: per-entity markdown notes under `Classes/`, `Enums/`, `Object_Properties/`, `Data_Properties/`, `Annotation_Properties/`, `Datatypes/`, `Individuals/`, plus `00-Index/Index.md` linking everything. Notes use stable IRI-derived IDs and headings use labels when available (IRI fallback).
 
 ## Version
 

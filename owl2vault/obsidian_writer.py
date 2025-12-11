@@ -37,11 +37,23 @@ def _format_cardinality(min_card: Optional[int], max_card: Optional[int]) -> str
     return f"{min_part}..{max_part}"
 
 
-def _range_display(range_iri: str, range_label: str, class_ids: Dict[str, str], enum_ids: Dict[str, str], prefixes: Dict[str, str]) -> str:
+def _range_display(
+    range_iri: str,
+    range_label: str,
+    class_ids: Dict[str, str],
+    enum_ids: Dict[str, str],
+    datatype_ids: Dict[str, str],
+    individual_ids: Dict[str, str],
+    prefixes: Dict[str, str],
+) -> str:
     if range_iri in class_ids:
         return f"[[{class_ids[range_iri]}|{range_label}]]"
     if range_iri in enum_ids:
         return f"[[{enum_ids[range_iri]}|{range_label}]]"
+    if range_iri in datatype_ids:
+        return f"[[{datatype_ids[range_iri]}|{range_label}]]"
+    if range_iri in individual_ids:
+        return f"[[{individual_ids[range_iri]}|{range_label}]]"
     curie = _iri_to_curie(range_iri, prefixes)
     return curie or range_label
 
@@ -51,6 +63,8 @@ def _annotation_lines(
     prop_ids: Dict[str, str],
     class_ids: Dict[str, str],
     enum_ids: Dict[str, str],
+    datatype_ids: Dict[str, str],
+    individual_ids: Dict[str, str],
     prefixes: Dict[str, str],
 ) -> list[str]:
     lines: list[str] = []
@@ -63,6 +77,10 @@ def _annotation_lines(
                     display_val = f"[[{class_ids[val]}|{display_val}]]"
                 elif val in enum_ids:
                     display_val = f"[[{enum_ids[val]}|{display_val}]]"
+                elif val in datatype_ids:
+                    display_val = f"[[{datatype_ids[val]}|{display_val}]]"
+                elif val in individual_ids:
+                    display_val = f"[[{individual_ids[val]}|{display_val}]]"
                 elif val in prop_ids:
                     display_val = f"[[{prop_ids[val]}|{display_val}]]"
                 else:
@@ -80,7 +98,15 @@ def _write_note(path: Path, front_matter: Dict[str, object], body_lines: list[st
     path.write_text(content, encoding="utf-8")
 
 
-def _write_class_notes(om: OModel, base_dir: Path, class_ids: Dict[str, str], enum_ids: Dict[str, str]) -> None:
+def _write_class_notes(
+    om: OModel,
+    base_dir: Path,
+    class_ids: Dict[str, str],
+    enum_ids: Dict[str, str],
+    datatype_ids: Dict[str, str],
+    individual_ids: Dict[str, str],
+    prop_ids: Dict[str, str],
+) -> None:
     class_dir = base_dir / "Classes"
     class_dir.mkdir(parents=True, exist_ok=True)
 
@@ -88,6 +114,7 @@ def _write_class_notes(om: OModel, base_dir: Path, class_ids: Dict[str, str], en
         note_id = class_ids[cls.iri]
         log.debug("Writing class note %s -> %s", cls.label, note_id)
         curie = _iri_to_curie(cls.iri, om.prefixes)
+        heading = cls.label or cls.iri
         front = {
             "iri": cls.iri,
             "curie": curie,
@@ -97,7 +124,7 @@ def _write_class_notes(om: OModel, base_dir: Path, class_ids: Dict[str, str], en
             "tags": ["class"],
         }
 
-        body: list[str] = [f"# {cls.label}", "", "## Summary", f"- Label: {cls.label}", f"- CURIE: {curie or ''}", f"- IRI: {cls.iri}"]
+        body: list[str] = [f"# {heading}", "", "## Summary", f"- Label: {cls.label or cls.iri}", f"- CURIE: {curie or ''}", f"- IRI: {cls.iri}"]
         body.extend(["", "## Superclasses"])
         if cls.super_iris:
             for sup in cls.super_iris:
@@ -111,7 +138,9 @@ def _write_class_notes(om: OModel, base_dir: Path, class_ids: Dict[str, str], en
 
         body.extend(["", "## Slots", "| Slot | Range | Card. | Description |", "| --- | --- | --- | --- |"])
         for slot in cls.slots:
-            range_disp = _range_display(slot.range_iri, slot.range_label, class_ids, enum_ids, om.prefixes)
+            range_disp = _range_display(
+                slot.range_iri, slot.range_label, class_ids, enum_ids, datatype_ids, individual_ids, om.prefixes
+            )
             card_disp = _format_cardinality(slot.min_card, slot.max_card)
             body.append(
                 f"| {slot.name} | {range_disp} | {card_disp} | {slot.description or ''} |"
@@ -121,9 +150,11 @@ def _write_class_notes(om: OModel, base_dir: Path, class_ids: Dict[str, str], en
         body.extend(
             _annotation_lines(
                 cls.annotations,
-                prop_ids={},
+                prop_ids=prop_ids,
                 class_ids=class_ids,
                 enum_ids=enum_ids,
+                datatype_ids=datatype_ids,
+                individual_ids=individual_ids,
                 prefixes=om.prefixes,
             )
         )
@@ -139,6 +170,7 @@ def _write_enum_notes(om: OModel, base_dir: Path, enum_ids: Dict[str, str]) -> N
         note_id = enum_ids[enum.iri]
         log.debug("Writing enum note %s -> %s", enum.label, note_id)
         curie = _iri_to_curie(enum.iri, om.prefixes)
+        heading = enum.label or enum.iri
         front = {
             "iri": enum.iri,
             "curie": curie,
@@ -148,7 +180,14 @@ def _write_enum_notes(om: OModel, base_dir: Path, enum_ids: Dict[str, str]) -> N
             "tags": ["enum"],
         }
 
-        body: list[str] = [f"# {enum.label}", "", "## Summary", f"- Label: {enum.label}", f"- CURIE: {curie or ''}", f"- IRI: {enum.iri}"]
+        body: list[str] = [
+            f"# {heading}",
+            "",
+            "## Summary",
+            f"- Label: {enum.label or enum.iri}",
+            f"- CURIE: {curie or ''}",
+            f"- IRI: {enum.iri}",
+        ]
         body.extend(["", "## Permissible Values", "| Code | Label | Description |", "| --- | --- | --- |"])
         for val in enum.values:
             body.append(
@@ -158,15 +197,50 @@ def _write_enum_notes(om: OModel, base_dir: Path, enum_ids: Dict[str, str]) -> N
         _write_note(enum_dir / f"{note_id}.md", front, body)
 
 
+def _write_datatype_notes(om: OModel, base_dir: Path, datatype_ids: Dict[str, str]) -> None:
+    dt_dir = base_dir / "Datatypes"
+    dt_dir.mkdir(parents=True, exist_ok=True)
+
+    for dt in om.datatypes.values():
+        note_id = datatype_ids[dt.iri]
+        curie = _iri_to_curie(dt.iri, om.prefixes)
+        heading = dt.label or dt.iri
+        front = {
+            "iri": dt.iri,
+            "curie": curie,
+            "label": dt.label,
+            "note_id": note_id,
+            "type": "datatype",
+            "tags": ["datatype"],
+        }
+        body: list[str] = [
+            f"# {heading}",
+            "",
+            "## Summary",
+            f"- Label: {dt.label or dt.iri}",
+            f"- CURIE: {curie or ''}",
+            f"- IRI: {dt.iri}",
+            f"- Base: {dt.base_iri}",
+        ]
+        _write_note(dt_dir / f"{note_id}.md", front, body)
+
+
 def _write_property_notes(
     om: OModel,
     base_dir: Path,
     class_ids: Dict[str, str],
     enum_ids: Dict[str, str],
+    datatype_ids: Dict[str, str],
+    individual_ids: Dict[str, str],
     prop_ids: Dict[str, str],
 ) -> None:
-    prop_dir = base_dir / "Properties"
-    prop_dir.mkdir(parents=True, exist_ok=True)
+    prop_dirs = {
+        "object": base_dir / "Object_Properties",
+        "data": base_dir / "Data_Properties",
+        "annotation": base_dir / "Annotation_Properties",
+    }
+    for path in prop_dirs.values():
+        path.mkdir(parents=True, exist_ok=True)
 
     for prop in om.properties.values():
         note_id = prop_ids[prop.iri]
@@ -176,15 +250,16 @@ def _write_property_notes(
             "curie": curie,
             "label": prop.label,
             "note_id": note_id,
-            "type": "annotation_property" if prop.is_annotation else "property",
-            "tags": ["annotation_property" if prop.is_annotation else "property"],
+            "type": f"{prop.kind}_property",
+            "tags": [f"{prop.kind}_property"],
         }
 
+        heading = prop.label or prop.iri
         body: list[str] = [
-            f"# {prop.label}",
+            f"# {heading}",
             "",
             "## Summary",
-            f"- Label: {prop.label}",
+            f"- Label: {prop.label or prop.iri}",
             f"- CURIE: {curie or ''}",
             f"- IRI: {prop.iri}",
         ]
@@ -208,6 +283,12 @@ def _write_property_notes(
                 elif rng in enum_ids:
                     label = om.enums[rng].label
                     body.append(f"- [[{enum_ids[rng]}|{label}]]")
+                elif rng in datatype_ids:
+                    label = om.datatypes[rng].label
+                    body.append(f"- [[{datatype_ids[rng]}|{label}]]")
+                elif rng in individual_ids:
+                    label = om.individuals[rng].label
+                    body.append(f"- [[{individual_ids[rng]}|{label}]]")
                 else:
                     curie_rng = _iri_to_curie(rng, om.prefixes)
                     body.append(f"- {curie_rng or rng}")
@@ -232,11 +313,71 @@ def _write_property_notes(
                 prop_ids=prop_ids,
                 class_ids=class_ids,
                 enum_ids=enum_ids,
+                datatype_ids=datatype_ids,
+                individual_ids=individual_ids,
                 prefixes=om.prefixes,
             )
         )
 
-        _write_note(prop_dir / f"{note_id}.md", front, body)
+        _write_note(prop_dirs[prop.kind] / f"{note_id}.md", front, body)
+
+
+def _write_individual_notes(
+    om: OModel,
+    base_dir: Path,
+    class_ids: Dict[str, str],
+    enum_ids: Dict[str, str],
+    datatype_ids: Dict[str, str],
+    individual_ids: Dict[str, str],
+    prop_ids: Dict[str, str],
+) -> None:
+    ind_dir = base_dir / "Individuals"
+    ind_dir.mkdir(parents=True, exist_ok=True)
+
+    for ind in om.individuals.values():
+        note_id = individual_ids[ind.iri]
+        curie = _iri_to_curie(ind.iri, om.prefixes)
+        heading = ind.label or ind.iri
+        front = {
+            "iri": ind.iri,
+            "curie": curie,
+            "label": ind.label,
+            "note_id": note_id,
+            "type": "individual",
+            "tags": ["individual"],
+        }
+        body: list[str] = [
+            f"# {heading}",
+            "",
+            "## Summary",
+            f"- Label: {ind.label or ind.iri}",
+            f"- CURIE: {curie or ''}",
+            f"- IRI: {ind.iri}",
+        ]
+        body.extend(["", "## Types"])
+        if ind.types:
+            for t in ind.types:
+                if t in class_ids:
+                    body.append(f"- [[{class_ids[t]}|{om.classes[t].label}]]")
+                else:
+                    curie_t = _iri_to_curie(t, om.prefixes)
+                    body.append(f"- {curie_t or t}")
+        else:
+            body.append("- None")
+
+        body.extend(["", "## Annotations"])
+        body.extend(
+            _annotation_lines(
+                ind.annotations,
+                prop_ids=prop_ids,
+                class_ids=class_ids,
+                enum_ids=enum_ids,
+                datatype_ids=datatype_ids,
+                individual_ids=individual_ids,
+                prefixes=om.prefixes,
+            )
+        )
+        _write_note(ind_dir / f"{note_id}.md", front, body)
 
 
 def _write_index(
@@ -244,6 +385,8 @@ def _write_index(
     base_dir: Path,
     class_ids: Dict[str, str],
     enum_ids: Dict[str, str],
+    datatype_ids: Dict[str, str],
+    individual_ids: Dict[str, str],
     prop_ids: Dict[str, str],
 ) -> None:
     index_dir = base_dir / "00-Index"
@@ -263,10 +406,41 @@ def _write_index(
     else:
         lines.append("- None")
 
-    lines.extend(["", "## Properties"])
-    if om.properties:
-        for prop in sorted(om.properties.values(), key=lambda p: p.label.lower()):
-            lines.append(f"- [[{prop_ids[prop.iri]}|{prop.label}]]")
+    lines.extend(["", "## Object Properties"])
+    obj_props = [p for p in om.properties.values() if p.kind == "object"]
+    if obj_props:
+        for prop in sorted(obj_props, key=lambda p: (p.label or p.iri).lower()):
+            lines.append(f"- [[{prop_ids[prop.iri]}|{prop.label or prop.iri}]]")
+    else:
+        lines.append("- None")
+
+    lines.extend(["", "## Data Properties"])
+    data_props = [p for p in om.properties.values() if p.kind == "data"]
+    if data_props:
+        for prop in sorted(data_props, key=lambda p: (p.label or p.iri).lower()):
+            lines.append(f"- [[{prop_ids[prop.iri]}|{prop.label or prop.iri}]]")
+    else:
+        lines.append("- None")
+
+    lines.extend(["", "## Annotation Properties"])
+    ann_props = [p for p in om.properties.values() if p.kind == "annotation"]
+    if ann_props:
+        for prop in sorted(ann_props, key=lambda p: (p.label or p.iri).lower()):
+            lines.append(f"- [[{prop_ids[prop.iri]}|{prop.label or prop.iri}]]")
+    else:
+        lines.append("- None")
+
+    lines.extend(["", "## Datatypes"])
+    if om.datatypes:
+        for dt in sorted(om.datatypes.values(), key=lambda d: d.label.lower()):
+            lines.append(f"- [[{datatype_ids[dt.iri]}|{dt.label}]]")
+    else:
+        lines.append("- None")
+
+    lines.extend(["", "## Individuals"])
+    if om.individuals:
+        for ind in sorted(om.individuals.values(), key=lambda i: (i.label or i.iri).lower()):
+            lines.append(f"- [[{individual_ids[ind.iri]}|{ind.label or ind.iri}]]")
     else:
         lines.append("- None")
 
@@ -278,20 +452,26 @@ def write_obsidian_vault(om: OModel, out_dir: str) -> None:
 
     base_dir = Path(out_dir)
     log.info(
-        "Rendering Obsidian vault to %s (%d classes, %d enums, %d properties)",
+        "Rendering Obsidian vault to %s (%d classes, %d enums, %d properties, %d datatypes, %d individuals)",
         base_dir,
         len(om.classes),
         len(om.enums),
         len(om.properties),
+        len(om.datatypes),
+        len(om.individuals),
     )
     class_ids = {iri: iri_to_note_id(iri) for iri in om.classes}
     enum_ids = {iri: iri_to_note_id(iri) for iri in om.enums}
+    datatype_ids = {iri: iri_to_note_id(iri) for iri in om.datatypes}
     prop_ids = {iri: iri_to_note_id(iri) for iri in om.properties}
+    individual_ids = {iri: iri_to_note_id(iri) for iri in om.individuals}
 
-    _write_class_notes(om, base_dir, class_ids, enum_ids)
+    _write_class_notes(om, base_dir, class_ids, enum_ids, datatype_ids, individual_ids, prop_ids)
     _write_enum_notes(om, base_dir, enum_ids)
-    _write_property_notes(om, base_dir, class_ids, enum_ids, prop_ids)
-    _write_index(om, base_dir, class_ids, enum_ids, prop_ids)
+    _write_property_notes(om, base_dir, class_ids, enum_ids, datatype_ids, individual_ids, prop_ids)
+    _write_datatype_notes(om, base_dir, datatype_ids)
+    _write_individual_notes(om, base_dir, class_ids, enum_ids, datatype_ids, individual_ids, prop_ids)
+    _write_index(om, base_dir, class_ids, enum_ids, datatype_ids, individual_ids, prop_ids)
 
 
 __all__ = ["write_obsidian_vault"]

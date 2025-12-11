@@ -9,7 +9,16 @@ from rdflib.collection import Collection
 from rdflib.util import guess_format
 from rdflib.namespace import OWL, RDF, RDFS, XSD
 
-from .model import OClass, ODatatype, OEnumValue, OEnumeration, OModel, OProperty, OSlot
+from .model import (
+    OClass,
+    ODatatype,
+    OEnumValue,
+    OEnumeration,
+    OIndividual,
+    OModel,
+    OProperty,
+    OSlot,
+)
 
 
 log = logging.getLogger(__name__)
@@ -120,7 +129,12 @@ def _range_label(model: OModel, graph: Graph, node) -> str:
 
 
 def _collect_properties(graph: Graph, model: OModel) -> None:
-    for prop_type, is_annotation in ((OWL.ObjectProperty, False), (OWL.AnnotationProperty, True)):
+    prop_kinds = [
+        (OWL.ObjectProperty, "object"),
+        (OWL.DatatypeProperty, "data"),
+        (OWL.AnnotationProperty, "annotation"),
+    ]
+    for prop_type, kind in prop_kinds:
         for prop in graph.subjects(RDF.type, prop_type):
             iri = str(prop)
             label = _label_for(graph, prop)
@@ -137,7 +151,7 @@ def _collect_properties(graph: Graph, model: OModel) -> None:
                 description=desc,
                 domains=domains,
                 ranges=ranges,
-                is_annotation=is_annotation,
+                kind=kind,
                 inverse_iris=sorted(inverses),
                 annotations=_collect_annotations(graph, model, prop),
             )
@@ -184,7 +198,14 @@ def _restriction_to_slot(model: OModel, graph: Graph, restriction: BNode) -> Opt
 
 
 def _slot_from_property(model: OModel, graph: Graph, prop: OProperty) -> OSlot:
-    range_iri = prop.ranges[0] if prop.ranges else str(OWL.Thing if not prop.is_annotation else XSD.string)
+    if prop.ranges:
+        range_iri = prop.ranges[0]
+    elif prop.kind == "object":
+        range_iri = str(OWL.Thing)
+    elif prop.kind == "data":
+        range_iri = str(XSD.string)
+    else:
+        range_iri = str(XSD.string)
     _ensure_datatype(model, range_iri)
     return OSlot(
         iri=prop.iri,
@@ -192,7 +213,7 @@ def _slot_from_property(model: OModel, graph: Graph, prop: OProperty) -> OSlot:
         description=prop.description,
         range_iri=range_iri,
         range_label=_range_label(model, graph, URIRef(range_iri)),
-        is_object=not prop.is_annotation,
+        is_object=prop.kind == "object",
         min_card=None,
         max_card=None,
     )
@@ -283,6 +304,18 @@ def load_owl(path: str) -> OModel:
                 cls = model.classes[dom]
                 if all(existing.iri != slot.iri for existing in cls.slots):
                     cls.slots.append(slot)
+
+    # Individuals
+    for subj in set(graph.subjects(RDF.type, OWL.NamedIndividual)):
+        if isinstance(subj, URIRef):
+            types = [str(t) for t in graph.objects(subj, RDF.type) if isinstance(t, URIRef) and t != OWL.NamedIndividual]
+            model.individuals[str(subj)] = OIndividual(
+                iri=str(subj),
+                label=_label_for(graph, subj),
+                description=_comment(graph, subj),
+                types=types,
+                annotations=_collect_annotations(graph, model, subj),
+            )
 
     log.info(
         "Loaded ontology %s (%d classes, %d enums, %d datatypes)",

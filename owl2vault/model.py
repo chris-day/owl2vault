@@ -34,7 +34,7 @@ class OProperty:
     description: Optional[str]
     domains: List[str] = field(default_factory=list)
     ranges: List[str] = field(default_factory=list)
-    is_annotation: bool = False
+    kind: str = "object"  # object | data | annotation
     inverse_iris: List[str] = field(default_factory=list)
     annotations: Dict[str, List[tuple[str, bool]]] = field(default_factory=dict)
 
@@ -77,6 +77,17 @@ class ODatatype:
 
 
 @dataclass
+class OIndividual:
+    """Named individual instance."""
+
+    iri: str
+    label: str
+    description: Optional[str]
+    types: List[str] = field(default_factory=list)
+    annotations: Dict[str, List[tuple[str, bool]]] = field(default_factory=dict)
+
+
+@dataclass
 class OModel:
     """Container for ontology content."""
 
@@ -86,6 +97,7 @@ class OModel:
     enums: Dict[str, OEnumeration] = field(default_factory=dict)
     datatypes: Dict[str, ODatatype] = field(default_factory=dict)
     properties: Dict[str, OProperty] = field(default_factory=dict)
+    individuals: Dict[str, OIndividual] = field(default_factory=dict)
 
 
 __all__ = [
@@ -95,5 +107,6 @@ __all__ = [
     "OSlot",
     "OClass",
     "ODatatype",
+    "OIndividual",
     "OModel",
 ]

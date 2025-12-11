@@ -1,5 +1,14 @@
 """OWL to LinkML/Obsidian conversion toolkit."""
-from .model import OEnumValue, OEnumeration, OProperty, OSlot, OClass, ODatatype, OModel
+from .model import (
+    OEnumValue,
+    OEnumeration,
+    OProperty,
+    OSlot,
+    OClass,
+    ODatatype,
+    OIndividual,
+    OModel,
+)
 from .note_id import iri_to_note_id
 from .loader import load_owl
 from .linkml_writer import model_to_linkml, write_linkml_yaml
@@ -12,6 +21,7 @@ __all__ = [
     "OProperty",
     "OClass",
     "ODatatype",
+    "OIndividual",
     "OModel",
     "iri_to_note_id",
     "load_owl",
@@ -20,4 +30,4 @@ __all__ = [
     "write_obsidian_vault",
 ]
 
-__version__ = "0.1.3"
+__version__ = "0.1.4"
