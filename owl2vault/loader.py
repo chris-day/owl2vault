@@ -258,6 +258,14 @@ def load_owl(path: str) -> OModel:
             enum = _extract_enum(graph, cls, one_of)
             model.enums[enum.iri] = enum
             enum_class_iris.add(str(cls))
+    # Also catch any node with owl:oneOf even if not typed as owl:Class
+    for cls in graph.subjects(OWL.oneOf, None):
+        if isinstance(cls, URIRef) and str(cls) not in enum_class_iris:
+            one_of = graph.value(cls, OWL.oneOf)
+            if one_of:
+                enum = _extract_enum(graph, cls, one_of)
+                model.enums[enum.iri] = enum
+                enum_class_iris.add(str(cls))
 
     # Prepopulate datatype map for common XSD entries
     for iri, (label, base) in _XSD_TYPE_INFO.items():
@@ -306,16 +314,24 @@ def load_owl(path: str) -> OModel:
                     cls.slots.append(slot)
 
     # Individuals
-    for subj in set(graph.subjects(RDF.type, OWL.NamedIndividual)):
+    individual_nodes: Set[URIRef] = set()
+    for subj in graph.subjects(RDF.type, OWL.NamedIndividual):
         if isinstance(subj, URIRef):
-            types = [str(t) for t in graph.objects(subj, RDF.type) if isinstance(t, URIRef) and t != OWL.NamedIndividual]
-            model.individuals[str(subj)] = OIndividual(
-                iri=str(subj),
-                label=_label_for(graph, subj),
-                description=_comment(graph, subj),
-                types=types,
-                annotations=_collect_annotations(graph, model, subj),
-            )
+            individual_nodes.add(subj)
+    for subj, typ in graph.subject_objects(RDF.type):
+        if not isinstance(subj, URIRef):
+            continue
+        if isinstance(typ, URIRef) and typ in model.classes:
+            individual_nodes.add(subj)
+    for subj in individual_nodes:
+        types = [str(t) for t in graph.objects(subj, RDF.type) if isinstance(t, URIRef) and t != OWL.NamedIndividual]
+        model.individuals[str(subj)] = OIndividual(
+            iri=str(subj),
+            label=_label_for(graph, subj),
+            description=_comment(graph, subj),
+            types=types,
+            annotations=_collect_annotations(graph, model, subj),
+        )
 
     log.info(
         "Loaded ontology %s (%d classes, %d enums, %d datatypes)",

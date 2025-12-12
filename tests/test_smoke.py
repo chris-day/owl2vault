@@ -39,6 +39,11 @@ def _build_graph() -> Graph:
     g.add((ann_prop, RDFS.range, XSD.string))
     g.add((cls_a, ann_prop, Literal("Example note")))
 
+    # Individual (not explicitly typed as NamedIndividual)
+    ind = ex.Instance1
+    g.add((ind, RDF.type, cls_a))
+    g.add((ind, RDFS.label, Literal("Instance 1")))
+
     color = ex.Color
     g.add((color, RDF.type, OWL.Class))
     g.add((color, RDFS.label, Literal("Color")))
