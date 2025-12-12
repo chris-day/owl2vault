@@ -1,6 +1,6 @@
 # owl2vault
 
-Generate a LinkML schema and an Obsidian-ready Markdown vault from an OWL ontology.
+Generate a LinkML schema, an Obsidian-ready Markdown vault and MkDocs from an OWL ontology.
 
 ## Quick start
 
