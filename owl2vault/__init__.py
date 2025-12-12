@@ -32,4 +32,4 @@ __all__ = [
     "write_mkdocs_docs",
 ]
 
-__version__ = "0.1.6"
+__version__ = "0.1.7"

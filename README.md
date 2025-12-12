@@ -13,7 +13,8 @@ Generate a LinkML schema and an Obsidian-ready Markdown vault from an OWL ontolo
 
 ## CLI options
 
-- `-i / --input` (required): path to the OWL file to load.
+- `-i / --input`: path to the OWL file to load.
+- `--url`: URL to download an OWL file to use as input.
 - `--linkml`: path to write the generated LinkML YAML.
 - `--vault`: directory to write the Obsidian vault (creates `Classes/`, `Enums/`, `Object_Properties/`, `Data_Properties/`, `Annotation_Properties/`, `00-Index/`).
 - `--mkdocs`: directory to write a MkDocs project (`mkdocs.yml` + `docs/` with markdown).
@@ -27,6 +28,10 @@ Generate a LinkML schema and an Obsidian-ready Markdown vault from an OWL ontolo
   - `owl2vault -i path/to/schema.owl --vault output/vault`
 - Generate MkDocs docs only:
   - `owl2vault -i path/to/schema.owl --mkdocs output/mkdocs`
+- Pull OWL from a URL then generate everything:
+  - `owl2vault --url https://ekgf.github.io/dprod/dprod.ttl --linkml output/schema.yaml --vault output/vault --mkdocs output/mkdocs`
+- Build and serve MkDocs docs after generation:
+  - `cd output/mkdocs && mkdocs build && mkdocs serve` (serve at http://127.0.0.1:8000 by default)
 - Do both with verbose logging:
   - `owl2vault -i path/to/schema.owl --linkml output/schema.yaml --vault output/vault --log-level DEBUG`
 - Generate LinkML YAML, then build markdown docs with linkml’s generator:
