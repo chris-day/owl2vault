@@ -124,7 +124,14 @@ def _write_class_notes(
             "tags": ["class"],
         }
 
-        body: list[str] = [f"# {heading}", "", "## Summary", f"- Label: {cls.label or cls.iri}", f"- CURIE: {curie or ''}", f"- IRI: {cls.iri}"]
+        body: list[str] = [
+            f"# {heading}",
+            "",
+            "## Summary",
+            f"- Label: {cls.label or cls.iri}",
+            f"- CURIE: {curie or ''}",
+            f"- IRI: {cls.iri}",
+        ]
         body.extend(["", "## Superclasses"])
         if cls.super_iris:
             for sup in cls.super_iris:
@@ -245,6 +252,7 @@ def _write_property_notes(
     for prop in om.properties.values():
         note_id = prop_ids[prop.iri]
         curie = _iri_to_curie(prop.iri, om.prefixes)
+        heading = prop.label or prop.iri
         front = {
             "iri": prop.iri,
             "curie": curie,
@@ -254,7 +262,6 @@ def _write_property_notes(
             "tags": [f"{prop.kind}_property"],
         }
 
-        heading = prop.label or prop.iri
         body: list[str] = [
             f"# {heading}",
             "",

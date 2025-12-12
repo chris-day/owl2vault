@@ -15,7 +15,8 @@ Generate a LinkML schema and an Obsidian-ready Markdown vault from an OWL ontolo
 
 - `-i / --input` (required): path to the OWL file to load.
 - `--linkml`: path to write the generated LinkML YAML.
-- `--vault`: directory to write the Obsidian vault (creates `Classes/`, `Enums/`, `Properties/`, `00-Index/`).
+- `--vault`: directory to write the Obsidian vault (creates `Classes/`, `Enums/`, `Object_Properties/`, `Data_Properties/`, `Annotation_Properties/`, `00-Index/`).
+- `--mkdocs`: directory to write a MkDocs project (`mkdocs.yml` + `docs/` with markdown).
 - `--log-level`: `ERROR|WARNING|INFO|DEBUG` (default: `INFO`).
 
 ## Usage examples
@@ -24,6 +25,8 @@ Generate a LinkML schema and an Obsidian-ready Markdown vault from an OWL ontolo
   - `owl2vault -i path/to/schema.owl --linkml output/schema.yaml`
 - Generate an Obsidian vault only:
   - `owl2vault -i path/to/schema.owl --vault output/vault`
+- Generate MkDocs docs only:
+  - `owl2vault -i path/to/schema.owl --mkdocs output/mkdocs`
 - Do both with verbose logging:
   - `owl2vault -i path/to/schema.owl --linkml output/schema.yaml --vault output/vault --log-level DEBUG`
 - Generate LinkML YAML, then build markdown docs with linkml’s generator:
@@ -34,7 +37,8 @@ Generate a LinkML schema and an Obsidian-ready Markdown vault from an OWL ontolo
 
 - LinkML: YAML schema with classes, slots, enums, and properties.
 - Obsidian vault: per-entity markdown notes under `Classes/`, `Enums/`, `Object_Properties/`, `Data_Properties/`, `Annotation_Properties/`, `Datatypes/`, `Individuals/`, plus `00-Index/Index.md` linking everything. Notes use stable IRI-derived IDs and headings use labels when available (IRI fallback).
+- MkDocs: `mkdocs.yml` plus `docs/` with markdown grouped into `classes/`, `enums/`, `object_properties/`, `data_properties/`, `annotation_properties/`, `datatypes/`, `individuals/`, and an `index.md` linking everything. Use `mkdocs build` to generate a site.
 
 ## Version
 
-- Current version: 0.1.3
+- Current version: 0.1.6

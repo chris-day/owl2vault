@@ -35,6 +35,8 @@ class OProperty:
     domains: List[str] = field(default_factory=list)
     ranges: List[str] = field(default_factory=list)
     kind: str = "object"  # object | data | annotation
+    equivalent_iris: List[str] = field(default_factory=list)
+    characteristics: List[str] = field(default_factory=list)  # functional, inverse_functional, symmetric, transitive
     inverse_iris: List[str] = field(default_factory=list)
     annotations: Dict[str, List[tuple[str, bool]]] = field(default_factory=dict)
 
@@ -61,6 +63,8 @@ class OClass:
     label: str
     description: Optional[str]
     super_iris: List[str] = field(default_factory=list)
+    equivalent_iris: List[str] = field(default_factory=list)
+    disjoint_iris: List[str] = field(default_factory=list)
     slots: List[OSlot] = field(default_factory=list)
     annotations: Dict[str, List[tuple[str, bool]]] = field(default_factory=dict)
 
@@ -84,6 +88,7 @@ class OIndividual:
     label: str
     description: Optional[str]
     types: List[str] = field(default_factory=list)
+    same_as: List[str] = field(default_factory=list)
     annotations: Dict[str, List[tuple[str, bool]]] = field(default_factory=dict)
 
 

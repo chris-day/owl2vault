@@ -7,6 +7,7 @@ import logging
 from .linkml_writer import write_linkml_yaml
 from .loader import load_owl
 from .obsidian_writer import write_obsidian_vault
+from .mkdocs_writer import write_mkdocs_docs
 
 
 log = logging.getLogger(__name__)
@@ -17,6 +18,7 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("-i", "--input", required=True, help="Path to input OWL file")
     parser.add_argument("--linkml", help="Output path for LinkML YAML")
     parser.add_argument("--vault", help="Output directory for Obsidian vault")
+    parser.add_argument("--mkdocs", help="Output directory for MkDocs project")
     parser.add_argument(
         "--log-level",
         default="INFO",
@@ -36,6 +38,9 @@ def main(argv: list[str] | None = None) -> None:
     if args.vault:
         log.info("Writing Obsidian vault to %s", args.vault)
         write_obsidian_vault(model, args.vault)
+    if args.mkdocs:
+        log.info("Writing MkDocs documentation to %s", args.mkdocs)
+        write_mkdocs_docs(model, args.mkdocs)
 
 
 if __name__ == "__main__":

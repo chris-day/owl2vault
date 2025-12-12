@@ -9,6 +9,7 @@ from rdflib.namespace import OWL, RDF, RDFS, XSD
 from owl2vault.linkml_writer import write_linkml_yaml
 from owl2vault.loader import load_owl
 from owl2vault.obsidian_writer import write_obsidian_vault
+from owl2vault.mkdocs_writer import write_mkdocs_docs
 
 
 def _build_graph() -> Graph:
@@ -80,3 +81,9 @@ def test_end_to_end(tmp_path: Path) -> None:
     assert (vault_dir / "Datatypes").is_dir()
     assert (vault_dir / "Individuals").is_dir()
     assert (vault_dir / "00-Index" / "Index.md").exists()
+
+    mkdocs_dir = tmp_path / "mkdocs"
+    write_mkdocs_docs(model, str(mkdocs_dir))
+    docs_root = mkdocs_dir / "docs"
+    assert (docs_root / "index.md").exists()
+    assert (mkdocs_dir / "mkdocs.yml").exists()

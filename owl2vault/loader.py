@@ -149,6 +149,16 @@ def _collect_properties(graph: Graph, model: OModel) -> None:
                 _ensure_datatype(model, rng)
             inverses = {str(inv) for inv in graph.objects(prop, OWL.inverseOf) if isinstance(inv, URIRef)}
             inverses.update({str(s) for s in graph.subjects(OWL.inverseOf, prop) if isinstance(s, URIRef)})
+            equivalents = [str(eq) for eq in graph.objects(prop, OWL.equivalentProperty) if isinstance(eq, URIRef)]
+            characteristics: list[str] = []
+            if (prop, RDF.type, OWL.FunctionalProperty) in graph:
+                characteristics.append("functional")
+            if (prop, RDF.type, OWL.InverseFunctionalProperty) in graph:
+                characteristics.append("inverse_functional")
+            if (prop, RDF.type, OWL.SymmetricProperty) in graph:
+                characteristics.append("symmetric")
+            if (prop, RDF.type, OWL.TransitiveProperty) in graph:
+                characteristics.append("transitive")
             model.properties[iri] = OProperty(
                 iri=iri,
                 label=label,
@@ -156,6 +166,8 @@ def _collect_properties(graph: Graph, model: OModel) -> None:
                 domains=domains,
                 ranges=ranges,
                 kind=kind,
+                equivalent_iris=equivalents,
+                characteristics=characteristics,
                 inverse_iris=sorted(inverses),
                 annotations=_collect_annotations(graph, model, prop),
             )
@@ -308,6 +320,12 @@ def load_owl(path: str) -> OModel:
                 slot = _restriction_to_slot(model, graph, sup)
                 if slot:
                     oclass.slots.append(slot)
+        for eq in graph.objects(URIRef(cls_iri), OWL.equivalentClass):
+            if isinstance(eq, URIRef):
+                oclass.equivalent_iris.append(str(eq))
+        for dis in graph.objects(URIRef(cls_iri), OWL.disjointWith):
+            if isinstance(dis, URIRef):
+                oclass.disjoint_iris.append(str(dis))
 
     for prop in model.properties.values():
         slot = _slot_from_property(model, graph, prop)
@@ -334,6 +352,7 @@ def load_owl(path: str) -> OModel:
             label=_label_for(graph, subj),
             description=_comment(graph, subj),
             types=types,
+            same_as=[str(sa) for sa in graph.objects(subj, OWL.sameAs) if isinstance(sa, URIRef)],
             annotations=_collect_annotations(graph, model, subj),
         )
 
