@@ -42,9 +42,13 @@ def _local_name(iri: URIRef) -> str:
 
 
 def _label_for(graph: Graph, node) -> str:
-    label = graph.value(node, RDFS.label)
-    if label:
-        return str(label)
+    labels = list(graph.objects(node, RDFS.label))
+    if labels:
+        # Prefer English labels if present
+        for l in labels:
+            if isinstance(l, Literal) and l.language and l.language.lower().startswith("en"):
+                return str(l)
+        return str(labels[0])
     if isinstance(node, URIRef):
         return _local_name(node)
     return str(node)
