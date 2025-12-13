@@ -267,14 +267,17 @@ def load_owl(path: str) -> OModel:
     model = OModel(ontology_iri=ontology_iri)
     model.prefixes = {prefix: str(uri) for prefix, uri in graph.namespace_manager.namespaces()}
 
+    class_nodes: Set[URIRef] = set()
+    class_nodes.update({c for c in graph.subjects(RDF.type, OWL.Class) if isinstance(c, URIRef)})
+    class_nodes.update({c for c in graph.subjects(RDF.type, RDFS.Class) if isinstance(c, URIRef)})
+
     enum_class_iris: Set[str] = set()
-    for cls in graph.subjects(RDF.type, OWL.Class):
+    for cls in class_nodes:
         one_of = graph.value(cls, OWL.oneOf)
         if one_of:
             enum = _extract_enum(graph, cls, one_of)
             model.enums[enum.iri] = enum
             enum_class_iris.add(str(cls))
-    # Also catch any node with owl:oneOf even if not typed as owl:Class
     for cls in graph.subjects(OWL.oneOf, None):
         if isinstance(cls, URIRef) and str(cls) not in enum_class_iris:
             one_of = graph.value(cls, OWL.oneOf)
@@ -299,7 +302,7 @@ def load_owl(path: str) -> OModel:
         base_iri = str(base_val) if isinstance(base_val, URIRef) else str(XSD.string)
         model.datatypes[iri] = ODatatype(iri=iri, label=label, base_iri=base_iri, description=desc)
 
-    for cls in graph.subjects(RDF.type, OWL.Class):
+    for cls in class_nodes:
         cls_iri = str(cls)
         if cls_iri in enum_class_iris:
             continue
