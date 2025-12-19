@@ -32,6 +32,10 @@ Generate a LinkML schema, an Obsidian-ready Markdown vault and MkDocs from an OW
   - `owl2vault --url https://ekgf.github.io/dprod/dprod.ttl --linkml output/schema.yaml --vault output/vault --mkdocs output/mkdocs`
 - Build and serve MkDocs docs after generation:
   - `cd output/mkdocs && mkdocs build && mkdocs serve` (serve at http://127.0.0.1:8000 by default)
+- MkDocs dependencies for theming/graphs:
+  - `pip install mkdocs-material`
+  - `pip install "mkdocs-material[imaging]"`
+  - `pip install mkdocs-network-graph-plugin`
 - Do both with verbose logging:
   - `owl2vault -i path/to/schema.owl --linkml output/schema.yaml --vault output/vault --log-level DEBUG`
 - Generate LinkML YAML, then build markdown docs with linkml’s generator:
@@ -42,7 +46,7 @@ Generate a LinkML schema, an Obsidian-ready Markdown vault and MkDocs from an OW
 
 - LinkML: YAML schema with classes, slots, enums, and properties.
 - Obsidian vault: per-entity markdown notes under `Classes/`, `Enums/`, `Object_Properties/`, `Data_Properties/`, `Annotation_Properties/`, `Datatypes/`, `Individuals/`, plus `00-Index/Index.md` linking everything. Notes use stable IRI-derived IDs and headings use labels when available (IRI fallback). Class sections list “Properties” (not “Slots”), and annotation predicates/IRI-valued annotations display resolved labels where available.
-- MkDocs: `mkdocs.yml` plus `docs/` with markdown grouped into `classes/`, `enums/`, `object_properties/`, `data_properties/`, `annotation_properties/`, `datatypes/`, `individuals/`, and an `index.md` linking everything. Use `mkdocs build` to generate a site. Annotation predicates/IRI-valued annotations are rendered with their labels when present.
+- MkDocs: `mkdocs.yml` (uses the `material` theme with `graph`, `search`, and `optimize` plugins) plus `docs/` with markdown grouped into `classes/`, `enums/`, `object_properties/`, `data_properties/`, `annotation_properties/`, `datatypes/`, `individuals/`, and an `index.md` linking everything. Use `mkdocs build` to generate a site. Annotation predicates/IRI-valued annotations are rendered with their labels when present.
 
 ## Version
 

@@ -5,6 +5,7 @@ from pathlib import Path
 from rdflib import BNode, Graph, Literal, Namespace
 from rdflib.collection import Collection
 from rdflib.namespace import OWL, RDF, RDFS, XSD
+import yaml
 
 from owl2vault.linkml_writer import write_linkml_yaml
 from owl2vault.loader import load_owl
@@ -100,6 +101,9 @@ def test_end_to_end(tmp_path: Path) -> None:
     docs_root = mkdocs_dir / "docs"
     assert (docs_root / "index.md").exists()
     assert (mkdocs_dir / "mkdocs.yml").exists()
+    cfg = yaml.safe_load((mkdocs_dir / "mkdocs.yml").read_text())
+    assert cfg.get("theme", {}).get("name") == "material"
+    assert cfg.get("plugins") == ["graph", "search", "optimize"]
     class_docs = list((docs_root / "classes").glob("*.md"))
     content = ""
     for doc in class_docs:

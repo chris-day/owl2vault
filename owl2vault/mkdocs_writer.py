@@ -457,6 +457,8 @@ def write_mkdocs_docs(om: OModel, out_dir: str) -> None:
 
     mkdocs_cfg = {
         "site_name": om.ontology_iri or "owl2vault docs",
+        "theme": {"name": "material"},
+        "plugins": ["graph", "search", "optimize"],
         "nav": nav,
     }
     with open(base / "mkdocs.yml", "w", encoding="utf-8") as fh:
