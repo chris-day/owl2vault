@@ -27,6 +27,7 @@ def _build_graph() -> Graph:
 
     prop = ex.hasName
     g.add((prop, RDF.type, OWL.DatatypeProperty))
+    g.add((prop, RDFS.label, Literal("Has Name")))
     restriction = BNode()
     g.add((cls_a, RDFS.subClassOf, restriction))
     g.add((restriction, RDF.type, OWL.Restriction))
@@ -36,9 +37,11 @@ def _build_graph() -> Graph:
 
     ann_prop = ex.note
     g.add((ann_prop, RDF.type, OWL.AnnotationProperty))
+    g.add((ann_prop, RDFS.label, Literal("Note")))
     g.add((ann_prop, RDFS.domain, cls_a))
     g.add((ann_prop, RDFS.range, XSD.string))
     g.add((cls_a, ann_prop, Literal("Example note")))
+    g.add((cls_a, ann_prop, prop))
 
     # Individual (not explicitly typed as NamedIndividual)
     ind = ex.Instance1
@@ -81,9 +84,29 @@ def test_end_to_end(tmp_path: Path) -> None:
     assert (vault_dir / "Datatypes").is_dir()
     assert (vault_dir / "Individuals").is_dir()
     assert (vault_dir / "00-Index" / "Index.md").exists()
+    class_a_note = ""
+    for note in (vault_dir / "Classes").glob("*.md"):
+        text = note.read_text()
+        if "# Class A" in text:
+            class_a_note = text
+            break
+    assert class_a_note
+    assert "## Properties" in class_a_note
+    assert "- Note: Example note" in class_a_note
+    assert "Note: [[hasName" in class_a_note and "Has Name]]" in class_a_note
 
     mkdocs_dir = tmp_path / "mkdocs"
     write_mkdocs_docs(model, str(mkdocs_dir))
     docs_root = mkdocs_dir / "docs"
     assert (docs_root / "index.md").exists()
     assert (mkdocs_dir / "mkdocs.yml").exists()
+    class_docs = list((docs_root / "classes").glob("*.md"))
+    content = ""
+    for doc in class_docs:
+        text = doc.read_text()
+        if text.startswith("# Class A"):
+            content = text
+            break
+    assert content
+    assert "## Properties" in content
+    assert "- Note: [Has Name]" in content

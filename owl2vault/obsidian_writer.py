@@ -65,27 +65,27 @@ def _annotation_lines(
     enum_ids: Dict[str, str],
     datatype_ids: Dict[str, str],
     individual_ids: Dict[str, str],
+    label_map: Dict[str, str],
     prefixes: Dict[str, str],
 ) -> list[str]:
     lines: list[str] = []
     for pred_iri, values in annotations.items():
-        display_pred = _iri_to_curie(pred_iri, prefixes) or pred_iri
+        display_pred = label_map.get(pred_iri) or _iri_to_curie(pred_iri, prefixes) or pred_iri
         for val, is_iri in values:
             display_val = val
             if is_iri:
                 if val in class_ids:
-                    display_val = f"[[{class_ids[val]}|{display_val}]]"
+                    display_val = f"[[{class_ids[val]}|{label_map.get(val, display_val)}]]"
                 elif val in enum_ids:
-                    display_val = f"[[{enum_ids[val]}|{display_val}]]"
+                    display_val = f"[[{enum_ids[val]}|{label_map.get(val, display_val)}]]"
                 elif val in datatype_ids:
-                    display_val = f"[[{datatype_ids[val]}|{display_val}]]"
+                    display_val = f"[[{datatype_ids[val]}|{label_map.get(val, display_val)}]]"
                 elif val in individual_ids:
-                    display_val = f"[[{individual_ids[val]}|{display_val}]]"
+                    display_val = f"[[{individual_ids[val]}|{label_map.get(val, display_val)}]]"
                 elif val in prop_ids:
-                    display_val = f"[[{prop_ids[val]}|{display_val}]]"
+                    display_val = f"[[{prop_ids[val]}|{label_map.get(val, display_val)}]]"
                 else:
-                    curie = _iri_to_curie(val, prefixes)
-                    display_val = curie or val
+                    display_val = label_map.get(val) or _iri_to_curie(val, prefixes) or val
             lines.append(f"- {display_pred}: {display_val}")
     if not lines:
         lines.append("- None")
@@ -106,6 +106,7 @@ def _write_class_notes(
     datatype_ids: Dict[str, str],
     individual_ids: Dict[str, str],
     prop_ids: Dict[str, str],
+    label_map: Dict[str, str],
 ) -> None:
     class_dir = base_dir / "Classes"
     class_dir.mkdir(parents=True, exist_ok=True)
@@ -143,7 +144,7 @@ def _write_class_notes(
         else:
             body.append("- None")
 
-        body.extend(["", "## Slots", "| Slot | Range | Card. | Description |", "| --- | --- | --- | --- |"])
+        body.extend(["", "## Properties", "| Property | Range | Card. | Description |", "| --- | --- | --- | --- |"])
         for slot in cls.slots:
             range_disp = _range_display(
                 slot.range_iri, slot.range_label, class_ids, enum_ids, datatype_ids, individual_ids, om.prefixes
@@ -162,6 +163,7 @@ def _write_class_notes(
                 enum_ids=enum_ids,
                 datatype_ids=datatype_ids,
                 individual_ids=individual_ids,
+                label_map=label_map,
                 prefixes=om.prefixes,
             )
         )
@@ -240,6 +242,7 @@ def _write_property_notes(
     datatype_ids: Dict[str, str],
     individual_ids: Dict[str, str],
     prop_ids: Dict[str, str],
+    label_map: Dict[str, str],
 ) -> None:
     prop_dirs = {
         "object": base_dir / "Object_Properties",
@@ -322,6 +325,7 @@ def _write_property_notes(
                 enum_ids=enum_ids,
                 datatype_ids=datatype_ids,
                 individual_ids=individual_ids,
+                label_map=label_map,
                 prefixes=om.prefixes,
             )
         )
@@ -337,6 +341,7 @@ def _write_individual_notes(
     datatype_ids: Dict[str, str],
     individual_ids: Dict[str, str],
     prop_ids: Dict[str, str],
+    label_map: Dict[str, str],
 ) -> None:
     ind_dir = base_dir / "Individuals"
     ind_dir.mkdir(parents=True, exist_ok=True)
@@ -381,6 +386,7 @@ def _write_individual_notes(
                 enum_ids=enum_ids,
                 datatype_ids=datatype_ids,
                 individual_ids=individual_ids,
+                label_map=label_map,
                 prefixes=om.prefixes,
             )
         )
@@ -473,11 +479,18 @@ def write_obsidian_vault(om: OModel, out_dir: str) -> None:
     prop_ids = {iri: iri_to_note_id(iri) for iri in om.properties}
     individual_ids = {iri: iri_to_note_id(iri) for iri in om.individuals}
 
-    _write_class_notes(om, base_dir, class_ids, enum_ids, datatype_ids, individual_ids, prop_ids)
+    label_map: Dict[str, str] = {}
+    label_map.update({iri: cls.label or iri for iri, cls in om.classes.items()})
+    label_map.update({iri: en.label or iri for iri, en in om.enums.items()})
+    label_map.update({iri: prop.label or iri for iri, prop in om.properties.items()})
+    label_map.update({iri: dt.label or iri for iri, dt in om.datatypes.items()})
+    label_map.update({iri: ind.label or iri for iri, ind in om.individuals.items()})
+
+    _write_class_notes(om, base_dir, class_ids, enum_ids, datatype_ids, individual_ids, prop_ids, label_map)
     _write_enum_notes(om, base_dir, enum_ids)
-    _write_property_notes(om, base_dir, class_ids, enum_ids, datatype_ids, individual_ids, prop_ids)
+    _write_property_notes(om, base_dir, class_ids, enum_ids, datatype_ids, individual_ids, prop_ids, label_map)
     _write_datatype_notes(om, base_dir, datatype_ids)
-    _write_individual_notes(om, base_dir, class_ids, enum_ids, datatype_ids, individual_ids, prop_ids)
+    _write_individual_notes(om, base_dir, class_ids, enum_ids, datatype_ids, individual_ids, prop_ids, label_map)
     _write_index(om, base_dir, class_ids, enum_ids, datatype_ids, individual_ids, prop_ids)
 
 

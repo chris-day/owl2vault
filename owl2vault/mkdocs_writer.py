@@ -34,21 +34,22 @@ def _link(label: str, path: str) -> str:
 def _annotation_lines(
     annotations: Dict[str, list[tuple[str, bool]]],
     link_for: Dict[str, str],
+    label_for: Dict[str, str],
     prefixes: Dict[str, str],
     docs_dir: Path,
     current_dir: Path,
 ) -> List[str]:
     lines: List[str] = []
     for pred_iri, values in annotations.items():
-        pred_label = _iri_to_curie(pred_iri, prefixes) or pred_iri
+        pred_label = label_for.get(pred_iri) or _iri_to_curie(pred_iri, prefixes) or pred_iri
         for val, is_iri in values:
             display = val
             if is_iri and val in link_for:
+                display = label_for.get(val) or val
                 rel = os.path.relpath(docs_dir / link_for[val], start=current_dir)
                 display = _link(display, rel)
             elif is_iri:
-                curie = _iri_to_curie(val, prefixes)
-                display = curie or val
+                display = label_for.get(val) or _iri_to_curie(val, prefixes) or val
             lines.append(f"- {pred_label}: {display}")
     if not lines:
         lines.append("- None")
@@ -107,6 +108,13 @@ def write_mkdocs_docs(om: OModel, out_dir: str) -> None:
     link_map.update({iri: f"datatypes/{nid}.md" for iri, nid in datatype_ids.items()})
     link_map.update({iri: f"individuals/{nid}.md" for iri, nid in individual_ids.items()})
 
+    label_map: Dict[str, str] = {}
+    label_map.update({iri: cls.label or iri for iri, cls in om.classes.items()})
+    label_map.update({iri: en.label or iri for iri, en in om.enums.items()})
+    label_map.update({iri: prop.label or iri for iri, prop in om.properties.items()})
+    label_map.update({iri: dt.label or iri for iri, dt in om.datatypes.items()})
+    label_map.update({iri: ind.label or iri for iri, ind in om.individuals.items()})
+
     # build subclass and instance lookup
     subclasses: Dict[str, Set[str]] = {iri: set() for iri in om.classes}
     for cls in om.classes.values():
@@ -150,7 +158,7 @@ def write_mkdocs_docs(om: OModel, out_dir: str) -> None:
         else:
             lines.append("- None")
 
-        lines.extend(["", "## Slots", "| Slot | Range | Card. | Description |", "| --- | --- | --- | --- |"])
+        lines.extend(["", "## Properties", "| Property | Range | Card. | Description |", "| --- | --- | --- | --- |"])
         for slot in cls.slots:
             range_label = slot.range_label
             if slot.range_iri in link_map:
@@ -192,7 +200,7 @@ def write_mkdocs_docs(om: OModel, out_dir: str) -> None:
             lines.append("- None")
 
         lines.extend(["", "## Annotations"])
-        lines.extend(_annotation_lines(cls.annotations, link_map, om.prefixes, docs_dir, dirs["classes"]))
+        lines.extend(_annotation_lines(cls.annotations, link_map, label_map, om.prefixes, docs_dir, dirs["classes"]))
 
         lines.extend(["", "## Instances"])
         insts = class_instances.get(cls.iri, set())
@@ -309,7 +317,7 @@ def write_mkdocs_docs(om: OModel, out_dir: str) -> None:
             lines.append("- None")
 
         lines.extend(["", "## Annotations"])
-        lines.extend(_annotation_lines(prop.annotations, link_map, om.prefixes, docs_dir, target_dir))
+        lines.extend(_annotation_lines(prop.annotations, link_map, label_map, om.prefixes, docs_dir, target_dir))
 
         lines.extend(["", "## Equivalent Properties"])
         if prop.equivalent_iris:
@@ -361,7 +369,7 @@ def write_mkdocs_docs(om: OModel, out_dir: str) -> None:
         else:
             lines.append("- None")
         lines.extend(["", "## Annotations"])
-        lines.extend(_annotation_lines(ind.annotations, link_map, om.prefixes, docs_dir, dirs["individuals"]))
+        lines.extend(_annotation_lines(ind.annotations, link_map, label_map, om.prefixes, docs_dir, dirs["individuals"]))
 
         lines.extend(["", "## Same As"])
         if ind.same_as:
