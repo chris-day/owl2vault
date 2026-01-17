@@ -182,7 +182,8 @@ def write_mkdocs_docs(om: OModel, out_dir: str) -> None:
             for eq in cls.equivalent_iris:
                 label = om.classes.get(eq).label if eq in om.classes else eq
                 if eq in link_map:
-                    lines.append(f"- {_link(label, link_map[eq])}")
+                    rel = os.path.relpath(docs_dir / link_map[eq], start=dirs["classes"])
+                    lines.append(f"- {_link(label, rel)}")
                 else:
                     lines.append(f"- {label}")
         else:
@@ -193,7 +194,8 @@ def write_mkdocs_docs(om: OModel, out_dir: str) -> None:
             for dj in cls.disjoint_iris:
                 label = om.classes.get(dj).label if dj in om.classes else dj
                 if dj in link_map:
-                    lines.append(f"- {_link(label, link_map[dj])}")
+                    rel = os.path.relpath(docs_dir / link_map[dj], start=dirs["classes"])
+                    lines.append(f"- {_link(label, rel)}")
                 else:
                     lines.append(f"- {label}")
         else:
