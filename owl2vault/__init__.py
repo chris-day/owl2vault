@@ -14,6 +14,8 @@ from .loader import load_owl
 from .linkml_writer import model_to_linkml, write_linkml_yaml
 from .obsidian_writer import write_obsidian_vault
 from .mkdocs_writer import write_mkdocs_docs
+from .docsify_writer import write_docsify_docs
+from .hugo_writer import write_hugo_site
 
 __all__ = [
     "OEnumValue",
@@ -30,6 +32,8 @@ __all__ = [
     "write_linkml_yaml",
     "write_obsidian_vault",
     "write_mkdocs_docs",
+    "write_docsify_docs",
+    "write_hugo_site",
 ]
 
-__version__ = "0.1.7"
+__version__ = "0.1.9"
