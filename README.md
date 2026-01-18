@@ -11,6 +11,17 @@ Generate a LinkML schema, an Obsidian-ready Markdown vault and MkDocs from an OW
   - `pip install -e .`
   - Run `owl2vault ...` while the venv is active (or use `.venv/bin/owl2vault`).
 
+## Quick start (Docsify + Hugo)
+
+- Generate Docsify output and serve it locally:
+  - `owl2vault -i path/to/schema.owl --docsify output/docsify`
+  - `cd output/docsify && python -m http.server 8000`
+  - Site serves at http://127.0.0.1:8000 (change port by replacing `8000`).
+- Generate Hugo output and serve it locally (requires Hugo installed):
+  - `owl2vault -i path/to/schema.owl --hugo output/hugo`
+  - `cd output/hugo && hugo server`
+  - Site serves at http://127.0.0.1:1313 by default (change port with `hugo server -p 9000`).
+
 ## CLI options
 
 - `-i / --input`: path to the OWL file to load.
@@ -18,6 +29,8 @@ Generate a LinkML schema, an Obsidian-ready Markdown vault and MkDocs from an OW
 - `--linkml`: path to write the generated LinkML YAML.
 - `--vault`: directory to write the Obsidian vault (creates `Classes/`, `Enums/`, `Object_Properties/`, `Data_Properties/`, `Annotation_Properties/`, `00-Index/`).
 - `--mkdocs`: directory to write a MkDocs project (`mkdocs.yml` + `docs/` with markdown).
+- `--docsify`: directory to write a Docsify project (`index.html` + `docs/` with markdown).
+- `--hugo`: directory to write a Hugo project (`config.toml` + `content/` with markdown).
 - `--log-level`: `ERROR|WARNING|INFO|DEBUG` (default: `INFO`).
 
 ## Usage examples
@@ -28,6 +41,14 @@ Generate a LinkML schema, an Obsidian-ready Markdown vault and MkDocs from an OW
   - `owl2vault -i path/to/schema.owl --vault output/vault`
 - Generate MkDocs docs only:
   - `owl2vault -i path/to/schema.owl --mkdocs output/mkdocs`
+- Generate Docsify docs only:
+  - `owl2vault -i path/to/schema.owl --docsify output/docsify`
+- Generate a Hugo site only:
+  - `owl2vault -i path/to/schema.owl --hugo output/hugo`
+- Generate both MkDocs and Docsify in one run:
+  - `owl2vault -i path/to/schema.owl --mkdocs output/mkdocs --docsify output/docsify`
+- Generate MkDocs, Docsify, and Hugo together:
+  - `owl2vault -i path/to/schema.owl --mkdocs output/mkdocs --docsify output/docsify --hugo output/hugo`
 - Pull OWL from a URL then generate everything:
   - `owl2vault --url https://ekgf.github.io/dprod/dprod.ttl --linkml output/schema.yaml --vault output/vault --mkdocs output/mkdocs`
 - Build and serve MkDocs docs after generation:
@@ -47,6 +68,8 @@ Generate a LinkML schema, an Obsidian-ready Markdown vault and MkDocs from an OW
 - LinkML: YAML schema with classes, slots, enums, and properties.
 - Obsidian vault: per-entity markdown notes under `Classes/`, `Enums/`, `Object_Properties/`, `Data_Properties/`, `Annotation_Properties/`, `Datatypes/`, `Individuals/`, plus `00-Index/Index.md` linking everything. Notes use stable IRI-derived IDs and headings use labels when available (IRI fallback). Class sections list “Properties” (not “Slots”), and annotation predicates/IRI-valued annotations display resolved labels where available.
 - MkDocs: `mkdocs.yml` (uses the `material` theme with `graph`, `search`, and `optimize` plugins) plus `docs/` with markdown grouped into `classes/`, `enums/`, `object_properties/`, `data_properties/`, `annotation_properties/`, `datatypes/`, `individuals/`, and an `index.md` linking everything. Use `mkdocs build` to generate a site. Annotation predicates/IRI-valued annotations are rendered with their labels when present.
+- Docsify: `index.html` plus `docs/` with markdown grouped into `classes/`, `enums/`, `object_properties/`, `data_properties/`, `annotation_properties/`, `datatypes/`, `individuals/`, and a `README.md` home page. `_sidebar.md` is generated from the same nav structure.
+- Hugo: `config.toml` plus `content/` with markdown grouped into `classes/`, `enums/`, `object_properties/`, `data_properties/`, `annotation_properties/`, `datatypes/`, `individuals/`, and a `_index.md` home page.
 
 ## Version
 
