@@ -36,4 +36,4 @@ __all__ = [
     "write_hugo_site",
 ]
 
-__version__ = "0.1.13"
+__version__ = "0.1.14"
