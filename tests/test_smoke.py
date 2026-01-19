@@ -129,4 +129,5 @@ def test_end_to_end(tmp_path: Path) -> None:
     hugo_content = hugo_dir / "content"
     assert (hugo_dir / "hugo.toml").exists()
     assert (hugo_content / "_index.md").exists()
-    assert "{{< relref" in (hugo_content / "_index.md").read_text()
+    assert "{{% relref" in (hugo_content / "_index.md").read_text()
+    assert (hugo_content / "classes" / "_index.md").exists()
