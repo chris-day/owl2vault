@@ -131,7 +131,9 @@ def test_end_to_end(tmp_path: Path) -> None:
     assert (hugo_content / "_index.md").exists()
     assert "{{% relref" in (hugo_content / "_index.md").read_text()
     assert (hugo_content / "classes" / "_index.md").exists()
-    assert 'type = "chapter"' in (hugo_content / "classes" / "_index.md").read_text()
+    classes_index = (hugo_content / "classes" / "_index.md").read_text()
+    assert 'type = "chapter"' in classes_index
+    assert not classes_index.lstrip().startswith("# ")
     class_page = next((hugo_content / "classes").glob("*.md"))
     class_text = class_page.read_text()
     assert 'type = "default"' in class_text
