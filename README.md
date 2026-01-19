@@ -19,8 +19,8 @@ Generate a LinkML schema, an Obsidian-ready Markdown vault and MkDocs from an OW
   - Site serves at http://127.0.0.1:8000 (change port by replacing `8000`).
 - Generate Hugo output and serve it locally (requires Hugo installed):
   - `owl2vault -i path/to/schema.owl --hugo output/hugo`
-  - `cd output/hugo && hugo server`
-  - Site serves at http://127.0.0.1:1313 by default (change port with `hugo server -p 9000`).
+  - `cd output/hugo && hugo serve --bind 0.0.0.0 --port 8000`
+  - Site serves at http://127.0.0.1:8000 (change port with `--port 9000`).
 
 ## CLI options
 
@@ -30,7 +30,7 @@ Generate a LinkML schema, an Obsidian-ready Markdown vault and MkDocs from an OW
 - `--vault`: directory to write the Obsidian vault (creates `Classes/`, `Enums/`, `Object_Properties/`, `Data_Properties/`, `Annotation_Properties/`, `00-Index/`).
 - `--mkdocs`: directory to write a MkDocs project (`mkdocs.yml` + `docs/` with markdown).
 - `--docsify`: directory to write a Docsify project (`index.html` + `docs/` with markdown).
-- `--hugo`: directory to write a Hugo project (`config.toml` + `content/` with markdown).
+- `--hugo`: directory to write a Hugo project (`hugo.toml` + `content/` with markdown).
 - `--log-level`: `ERROR|WARNING|INFO|DEBUG` (default: `INFO`).
 
 ## Usage examples
@@ -69,7 +69,7 @@ Generate a LinkML schema, an Obsidian-ready Markdown vault and MkDocs from an OW
 - Obsidian vault: per-entity markdown notes under `Classes/`, `Enums/`, `Object_Properties/`, `Data_Properties/`, `Annotation_Properties/`, `Datatypes/`, `Individuals/`, plus `00-Index/Index.md` linking everything. Notes use stable IRI-derived IDs and headings use labels when available (IRI fallback). Class sections list “Properties” (not “Slots”), and annotation predicates/IRI-valued annotations display resolved labels where available.
 - MkDocs: `mkdocs.yml` (uses the `material` theme with `graph`, `search`, and `optimize` plugins) plus `docs/` with markdown grouped into `classes/`, `enums/`, `object_properties/`, `data_properties/`, `annotation_properties/`, `datatypes/`, `individuals/`, and an `index.md` linking everything. Use `mkdocs build` to generate a site. Annotation predicates/IRI-valued annotations are rendered with their labels when present.
 - Docsify: `index.html` plus `docs/` with markdown grouped into `classes/`, `enums/`, `object_properties/`, `data_properties/`, `annotation_properties/`, `datatypes/`, `individuals/`, and a `README.md` home page. `_sidebar.md` is generated from the same nav structure.
-- Hugo: `config.toml` plus `content/` with markdown grouped into `classes/`, `enums/`, `object_properties/`, `data_properties/`, `annotation_properties/`, `datatypes/`, `individuals/`, and a `_index.md` home page.
+- Hugo: `hugo.toml` plus `content/` with markdown grouped into `classes/`, `enums/`, `object_properties/`, `data_properties/`, `annotation_properties/`, `datatypes/`, `individuals/`, and a `_index.md` home page.
 
 ## Version
 

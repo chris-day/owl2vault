@@ -11,6 +11,8 @@ from owl2vault.linkml_writer import write_linkml_yaml
 from owl2vault.loader import load_owl
 from owl2vault.obsidian_writer import write_obsidian_vault
 from owl2vault.mkdocs_writer import write_mkdocs_docs
+from owl2vault.docsify_writer import write_docsify_docs
+from owl2vault.hugo_writer import write_hugo_site
 
 
 def _build_graph() -> Graph:
@@ -114,3 +116,17 @@ def test_end_to_end(tmp_path: Path) -> None:
     assert content
     assert "## Properties" in content
     assert "- Note: [Has Name]" in content
+
+    docsify_dir = tmp_path / "docsify"
+    write_docsify_docs(model, str(docsify_dir))
+    docsify_docs = docsify_dir / "docs"
+    assert (docsify_dir / "index.html").exists()
+    assert (docsify_docs / "README.md").exists()
+    assert (docsify_docs / "_sidebar.md").exists()
+
+    hugo_dir = tmp_path / "hugo"
+    write_hugo_site(model, str(hugo_dir))
+    hugo_content = hugo_dir / "content"
+    assert (hugo_dir / "hugo.toml").exists()
+    assert (hugo_content / "_index.md").exists()
+    assert "{{< relref" in (hugo_content / "_index.md").read_text()

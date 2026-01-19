@@ -76,22 +76,8 @@ def _ensure_dirs(base: Path) -> Dict[str, Path]:
     return dirs
 
 
-def write_mkdocs_docs(om: OModel, out_dir: str) -> None:
-    """Write MkDocs project with markdown docs for the ontology."""
-
-    base = Path(out_dir)
-    docs_dir = base / "docs"
+def _write_markdown_docs(om: OModel, docs_dir: Path, index_filename: str = "index.md") -> List[object]:
     dirs = _ensure_dirs(docs_dir)
-
-    log.info(
-        "Writing MkDocs docs to %s (%d classes, %d enums, %d properties, %d datatypes, %d individuals)",
-        base,
-        len(om.classes),
-        len(om.enums),
-        len(om.properties),
-        len(om.datatypes),
-        len(om.individuals),
-    )
 
     class_ids = {iri: iri_to_note_id(iri) for iri in om.classes}
     enum_ids = {iri: iri_to_note_id(iri) for iri in om.enums}
@@ -440,10 +426,10 @@ def write_mkdocs_docs(om: OModel, out_dir: str) -> None:
     else:
         index_lines.append("- None")
 
-    (docs_dir / "index.md").write_text("\n".join(index_lines) + "\n", encoding="utf-8")
+    (docs_dir / index_filename).write_text("\n".join(index_lines) + "\n", encoding="utf-8")
 
     # mkdocs.yml
-    nav: List[object] = [{"Home": "index.md"}]
+    nav: List[object] = [{"Home": index_filename}]
     def _nav_section(name: str, items: List[tuple[str, str]]) -> None:
         if not items:
             return
@@ -457,6 +443,27 @@ def write_mkdocs_docs(om: OModel, out_dir: str) -> None:
     _nav_section("Datatypes", [(d.label or d.iri, link_map[d.iri]) for d in sorted(om.datatypes.values(), key=lambda d: (d.label or d.iri).lower())])
     _nav_section("Individuals", [(i.label or i.iri, link_map[i.iri]) for i in sorted(om.individuals.values(), key=lambda i: (i.label or i.iri).lower())])
 
+    return nav
+
+
+def write_mkdocs_docs(om: OModel, out_dir: str) -> None:
+    """Write MkDocs project with markdown docs for the ontology."""
+
+    base = Path(out_dir)
+    docs_dir = base / "docs"
+
+    log.info(
+        "Writing MkDocs docs to %s (%d classes, %d enums, %d properties, %d datatypes, %d individuals)",
+        base,
+        len(om.classes),
+        len(om.enums),
+        len(om.properties),
+        len(om.datatypes),
+        len(om.individuals),
+    )
+
+    nav = _write_markdown_docs(om, docs_dir, index_filename="index.md")
+
     mkdocs_cfg = {
         "site_name": om.ontology_iri or "owl2vault docs",
         "theme": {"name": "material"},
@@ -467,4 +474,4 @@ def write_mkdocs_docs(om: OModel, out_dir: str) -> None:
         yaml.safe_dump(mkdocs_cfg, fh, sort_keys=False)
 
 
-__all__ = ["write_mkdocs_docs"]
+__all__ = ["write_mkdocs_docs", "_write_markdown_docs"]

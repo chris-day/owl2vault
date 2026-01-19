@@ -12,6 +12,8 @@ from .linkml_writer import write_linkml_yaml
 from .loader import load_owl
 from .obsidian_writer import write_obsidian_vault
 from .mkdocs_writer import write_mkdocs_docs
+from .docsify_writer import write_docsify_docs
+from .hugo_writer import write_hugo_site
 
 
 log = logging.getLogger(__name__)
@@ -25,6 +27,8 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--linkml", help="Output path for LinkML YAML")
     parser.add_argument("--vault", help="Output directory for Obsidian vault")
     parser.add_argument("--mkdocs", help="Output directory for MkDocs project")
+    parser.add_argument("--docsify", help="Output directory for Docsify project")
+    parser.add_argument("--hugo", help="Output directory for Hugo project")
     parser.add_argument(
         "--log-level",
         default="INFO",
@@ -57,6 +61,12 @@ def main(argv: list[str] | None = None) -> None:
     if args.mkdocs:
         log.info("Writing MkDocs documentation to %s", args.mkdocs)
         write_mkdocs_docs(model, args.mkdocs)
+    if args.docsify:
+        log.info("Writing Docsify documentation to %s", args.docsify)
+        write_docsify_docs(model, args.docsify)
+    if args.hugo:
+        log.info("Writing Hugo site to %s", args.hugo)
+        write_hugo_site(model, args.hugo)
 
     if temp_dir:
         temp_dir.cleanup()
