@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "owl2vault"
-version = "0.1.16"
+version = "0.1.18"
 description = "Generate LinkML schemas and Obsidian notes from OWL ontologies"
 authors = [{name = "Owl2Vault"}]
 requires-python = ">=3.10"
@@ -16,6 +16,8 @@ dependencies = [
   "mkdocs-material",
   "mkdocs-material[imaging]",
   "mkdocs-network-graph-plugin",
+  "mkdocs-git-revision-date-localized-plugin",
+  "mkdocs-minify-plugin",
 ]
 
 [project.scripts]

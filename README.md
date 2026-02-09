@@ -44,12 +44,15 @@ Generate a LinkML schema, an Obsidian-ready Markdown vault and MkDocs from an OW
 - `--mkdocs`: directory to write a MkDocs project (`mkdocs.yml` + `docs/` with markdown).
 - `--docsify`: directory to write a Docsify project (`index.html` + `docs/` with markdown).
 - `--hugo`: directory to write a Hugo project (`hugo.toml` + `content/` with markdown).
+- `--create-dirs`: create missing output directories (and the parent directory for `--linkml`) before writing.
 - `--log-level`: `ERROR|WARNING|INFO|DEBUG` (default: `INFO`).
 
 ## Usage examples
 
 - Generate LinkML YAML only:
   - `owl2vault -i path/to/schema.owl --linkml output/schema.yaml`
+- Auto-create missing output directories:
+  - `owl2vault -i path/to/schema.owl --create-dirs --linkml output/schema.yaml --vault output/vault --mkdocs output/mkdocs`
 - Generate an Obsidian vault only:
   - `owl2vault -i path/to/schema.owl --vault output/vault`
 - Generate MkDocs docs only:
@@ -70,6 +73,8 @@ Generate a LinkML schema, an Obsidian-ready Markdown vault and MkDocs from an OW
   - `pip install mkdocs-material`
   - `pip install "mkdocs-material[imaging]"`
   - `pip install mkdocs-network-graph-plugin`
+  - `pip install mkdocs-git-revision-date-localized-plugin`
+  - `pip install mkdocs-minify-plugin`
 - Do both with verbose logging:
   - `owl2vault -i path/to/schema.owl --linkml output/schema.yaml --vault output/vault --log-level DEBUG`
 - Generate LinkML YAML, then build markdown docs with linkml’s generator:
@@ -86,4 +91,4 @@ Generate a LinkML schema, an Obsidian-ready Markdown vault and MkDocs from an OW
 
 ## Version
 
-- Current version: 0.1.16
+- Current version: 0.1.18

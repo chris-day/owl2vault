@@ -20,6 +20,7 @@ owl2vault [OPTIONS]
 - `--mkdocs DIR`: write MkDocs project.
 - `--docsify DIR`: write Docsify project.
 - `--hugo DIR`: write Hugo project.
+- `--create-dirs`: create missing output directories (and `--linkml` parent directory) before writing.
 
 ## Logging
 
@@ -29,3 +30,4 @@ owl2vault [OPTIONS]
 
 - Multiple outputs can be requested in one run.
 - If `--url` is used, temporary files are cleaned up automatically.
+- Without `--create-dirs`, the CLI warns and exits if required output directories do not exist.

@@ -19,6 +19,51 @@ from .hugo_writer import write_hugo_site
 log = logging.getLogger(__name__)
 
 
+def _prepare_output_paths(args: argparse.Namespace) -> None:
+    missing: list[tuple[Path, str]] = []
+
+    def _check_dir(path_value: str | None, label: str) -> None:
+        if not path_value:
+            return
+        path = Path(path_value)
+        if path.exists():
+            if not path.is_dir():
+                raise SystemExit(f"{label} must be a directory: {path}")
+            return
+        missing.append((path, label))
+
+    if args.linkml:
+        linkml_path = Path(args.linkml)
+        args.linkml = str(linkml_path)
+        parent = linkml_path.parent if str(linkml_path.parent) else Path(".")
+        if parent.exists():
+            if not parent.is_dir():
+                raise SystemExit(f"--linkml parent must be a directory: {parent}")
+        else:
+            missing.append((parent, "--linkml parent directory"))
+
+    _check_dir(args.vault, "--vault")
+    _check_dir(args.mkdocs, "--mkdocs")
+    _check_dir(args.docsify, "--docsify")
+    _check_dir(args.hugo, "--hugo")
+
+    if not missing:
+        return
+
+    for path, label in missing:
+        log.warning("%s does not exist: %s", label, path)
+
+    if not args.create_dirs:
+        raise SystemExit(
+            "One or more output directories do not exist. "
+            "Create them manually or re-run with --create-dirs."
+        )
+
+    for path, label in missing:
+        path.mkdir(parents=True, exist_ok=True)
+        log.info("Created missing directory for %s: %s", label, path)
+
+
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description="Convert OWL to LinkML and Obsidian vault")
     src_group = parser.add_mutually_exclusive_group(required=True)
@@ -30,6 +75,11 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--docsify", help="Output directory for Docsify project")
     parser.add_argument("--hugo", help="Output directory for Hugo project")
     parser.add_argument(
+        "--create-dirs",
+        action="store_true",
+        help="Create missing output directories before writing results",
+    )
+    parser.add_argument(
         "--log-level",
         default="INFO",
         choices=["ERROR", "WARNING", "INFO", "DEBUG"],
@@ -38,6 +88,7 @@ def main(argv: list[str] | None = None) -> None:
     args = parser.parse_args(argv)
 
     logging.basicConfig(level=getattr(logging, args.log_level.upper()))
+    _prepare_output_paths(args)
 
     owl_path = args.input
     temp_dir: tempfile.TemporaryDirectory[str] | None = None

@@ -20,21 +20,14 @@ markdown_extensions:
           format: !!python/name:pymdownx.superfences.fence_code_format
 
 plugins:
-  # 1. Search index
   - search:
       lang: en
-
-  # 2. Documentation topology graph
   - graph:
-      name: title      # use page titles as node labels
+      name: title
       debug: false
-
-  # 3. Revision metadata (governance / audit signal)
   - git-revision-date-localized:
       type: iso_date
       fallback_to_build_date: true
-
-  # 4. Output optimisation
   - minify:
       minify_html: true
       minify_js: true
