@@ -2,6 +2,19 @@
 
 Generate a LinkML schema, an Obsidian-ready Markdown vault and MkDocs from an OWL ontology.
 
+## Documentation
+
+- Main docs home: [`docs/index.md`](docs/index.md)
+- Architecture: [`docs/architecture.md`](docs/architecture.md)
+- Data model: [`docs/model.md`](docs/model.md)
+- CLI reference: [`docs/cli.md`](docs/cli.md)
+- Usage examples: [`docs/examples.md`](docs/examples.md)
+- Output generators: [`docs/generators.md`](docs/generators.md)
+- Development: [`docs/development.md`](docs/development.md)
+- Build docs site locally:
+  - `mkdocs build`
+  - `mkdocs serve --dev-addr 0.0.0.0:8000`
+
 ## Quick start
 
 - On Ubuntu LTS with a managed Python, avoid system-wide `pip` (PEP 668). Use a venv:
@@ -73,4 +86,4 @@ Generate a LinkML schema, an Obsidian-ready Markdown vault and MkDocs from an OW
 
 ## Version
 
-- Current version: 0.1.8
+- Current version: 0.1.16
