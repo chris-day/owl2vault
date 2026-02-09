@@ -1,0 +1,51 @@
+site_name: owl2vault
+site_description: OWL to LinkML, Obsidian, MkDocs, Docsify, and Hugo generator
+site_author: Owl2Vault
+site_url: https://chris-day.github.io/owl2vault/
+docs_dir: docs
+use_directory_urls: false
+
+theme:
+  name: material
+
+markdown_extensions:
+  - admonition
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+
+plugins:
+  # 1. Search index
+  - search:
+      lang: en
+
+  # 2. Documentation topology graph
+  - graph:
+      name: title      # use page titles as node labels
+      debug: false
+
+  # 3. Revision metadata (governance / audit signal)
+  - git-revision-date-localized:
+      type: iso_date
+      fallback_to_build_date: true
+
+  # 4. Output optimisation
+  - minify:
+      minify_html: true
+      minify_js: true
+      minify_css: true
+
+nav:
+  - Home: index.md
+  - Architecture: architecture.md
+  - Data Model: model.md
+  - CLI: cli.md
+  - Examples: examples.md
+  - SPARQL Extraction: sparql.md
+  - Generators: generators.md
+  - Development: development.md
